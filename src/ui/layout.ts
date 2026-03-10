@@ -6,7 +6,7 @@ import { paneStyle } from "./theme";
 export function createLayout(): DashboardLayout {
   const screen = blessed.screen({
     smartCSR: true,
-    title: "gitgud — git dashboard",
+    title: "👀 gitglance — git dashboard",
     fullUnicode: true,
   });
 

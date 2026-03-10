@@ -1,12 +1,15 @@
+import path from "path";
 import type { Widgets } from "neo-blessed";
 import { DashboardLayout, FocusablePane } from "./types";
 import { GitClient } from "./git/client";
 import { updateDetailPane } from "./ui/detail-pane";
+import { showCommitPrompt } from "./ui/commit-prompt";
 import { GitStatusData, CommitEntry, BranchEntry } from "./git/types";
 
 interface KeybindingContext {
   layout: DashboardLayout;
   gitClient: GitClient;
+  repoPath: string;
   refresh: () => Promise<void>;
   getData: () => {
     status: GitStatusData | null;
@@ -112,6 +115,106 @@ export function setupKeybindings(ctx: KeybindingContext): void {
       updateDetailPane(detailPane, `Could not load info for ${branch.name}`, "Error");
     }
     screen.render();
+  });
+
+  // s — toggle stage/unstage for selected file in status pane
+  screen.key(["s"], async () => {
+    if (focusIndex !== 0) return;
+    const data = ctx.getData();
+    if (!data.status) return;
+
+    const selected = (statusPane as unknown as { selected: number }).selected;
+    const allFiles = buildFileList(data.status);
+    const entry = allFiles[selected];
+    if (!entry || !entry.path) return;
+
+    try {
+      if (entry.staged) {
+        await gitClient.unstage(entry.path);
+      } else {
+        await gitClient.stage(entry.path);
+      }
+      await refresh();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      updateDetailPane(detailPane, `Stage error: ${message}`, "Error");
+      screen.render();
+    }
+  });
+
+  // a — stage all files
+  screen.key(["a"], async () => {
+    try {
+      await gitClient.stageAll();
+      await refresh();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      updateDetailPane(detailPane, `Stage all error: ${message}`, "Error");
+      screen.render();
+    }
+  });
+
+  // c — commit staged files
+  screen.key(["c"], async () => {
+    const data = ctx.getData();
+    if (!data.status || data.status.staged.length === 0) {
+      updateDetailPane(detailPane, "Nothing staged to commit", "Commit");
+      screen.render();
+      return;
+    }
+
+    const message = await showCommitPrompt(screen);
+    if (!message) {
+      screen.render();
+      return;
+    }
+
+    try {
+      const hash = await gitClient.commit(message);
+      updateDetailPane(detailPane, `Committed: ${hash}\n\n${message}`, "Commit");
+      await refresh();
+    } catch (err) {
+      const errMessage = err instanceof Error ? err.message : String(err);
+      updateDetailPane(detailPane, `Commit error: ${errMessage}`, "Error");
+      screen.render();
+    }
+  });
+
+  // e — edit selected file in $EDITOR
+  screen.key(["e"], async () => {
+    if (focusIndex !== 0) return;
+    const data = ctx.getData();
+    if (!data.status) return;
+
+    const selected = (statusPane as unknown as { selected: number }).selected;
+    const allFiles = buildFileList(data.status);
+    const entry = allFiles[selected];
+    if (!entry || !entry.path) return;
+
+    const editor = process.env.EDITOR || "vi";
+    const filePath = path.resolve(ctx.repoPath, entry.path);
+
+    try {
+      screen.exec(editor, [filePath], {}, (err: Error | null, success: boolean) => {
+        if (err) {
+          updateDetailPane(detailPane, `Editor error: ${err.message}`, "Error");
+          screen.render();
+          return;
+        }
+        refresh().then(() => {
+          updateDetailPane(
+            detailPane,
+            `Edited: ${entry.path}`,
+            `Edit: ${entry.path}`
+          );
+          screen.render();
+        });
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      updateDetailPane(detailPane, `Could not open editor: ${message}`, "Error");
+      screen.render();
+    }
   });
 
   // Start with focus on status pane

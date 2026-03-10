@@ -5,16 +5,20 @@ import simpleGit from "simple-git";
 import { runApp } from "./app";
 
 const HELP_TEXT = `
-gitgud — TUI git repository dashboard
+👀 gitglance — TUI git repository dashboard
 
 Usage:
-  gitgud [path]       Launch dashboard for repo at path (default: cwd)
-  gitgud --help       Show this help message
+  gitglance [path]       Launch dashboard for repo at path (default: cwd)
+  gitglance --help       Show this help message
 
 Keybindings:
   Tab / Shift-Tab     Cycle focus between panes
   j/k / Arrow keys    Navigate within pane
   Enter               Show diff/details for selected item
+  s                   Toggle stage/unstage for selected file
+  a                   Stage all files
+  c                   Commit staged files
+  e                   Edit selected file in $EDITOR
   r                   Refresh all data
   q / Ctrl-C          Quit
 `;
@@ -34,7 +38,7 @@ async function main(): Promise<void> {
 
   if (!isRepo) {
     console.error(`Error: ${repoPath} is not a git repository.`);
-    console.error("Run gitgud inside a git repo or pass a path: gitgud /path/to/repo");
+    console.error("Run gitglance inside a git repo or pass a path: gitglance /path/to/repo");
     process.exit(1);
   }
 

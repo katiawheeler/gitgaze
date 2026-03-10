@@ -1,10 +1,10 @@
 {
-  "name": "gitgud",
+  "name": "gitglance",
   "version": "1.0.0",
   "description": "A TUI git repository dashboard — get gud at seeing your repo",
   "main": "dist/cli.js",
   "bin": {
-    "gitgud": "dist/cli.js"
+    "gitglance": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

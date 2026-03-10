@@ -51,6 +51,7 @@ export async function runApp(repoPath: string): Promise<void> {
   setupKeybindings({
     layout,
     gitClient,
+    repoPath,
     refresh: fetchAll,
     getData: () => state,
   });

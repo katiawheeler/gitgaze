@@ -94,4 +94,21 @@ export class GitClient {
   async getShowCommit(hash: string): Promise<string> {
     return this.git.show([hash, "--stat", "--patch"]);
   }
+
+  async stage(filePath: string): Promise<void> {
+    await this.git.add(filePath);
+  }
+
+  async unstage(filePath: string): Promise<void> {
+    await this.git.reset(["HEAD", "--", filePath]);
+  }
+
+  async stageAll(): Promise<void> {
+    await this.git.add("-A");
+  }
+
+  async commit(message: string): Promise<string> {
+    const result = await this.git.commit(message);
+    return result.commit;
+  }
 }
