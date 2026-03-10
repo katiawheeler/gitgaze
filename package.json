@@ -1,0 +1,30 @@
+{
+  "name": "gitgud",
+  "version": "1.0.0",
+  "description": "A TUI git repository dashboard — get gud at seeing your repo",
+  "main": "dist/cli.js",
+  "bin": {
+    "gitgud": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "git",
+    "tui",
+    "dashboard",
+    "terminal"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "neo-blessed": "^0.2.0",
+    "simple-git": "^3.33.0"
+  },
+  "devDependencies": {
+    "@types/blessed": "^0.1.27",
+    "@types/node": "^25.4.0",
+    "typescript": "^5.9.3"
+  }
+}
