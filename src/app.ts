@@ -48,16 +48,24 @@ export async function runApp(repoPath: string): Promise<void> {
     }
   }
 
-  setupKeybindings({
+  let refocus: () => void = () => {};
+
+  const handle = setupKeybindings({
     layout,
     gitClient,
     repoPath,
-    refresh: fetchAll,
+    refresh: async () => {
+      await fetchAll();
+      refocus();
+    },
     getData: () => state,
   });
+
+  refocus = handle.refocus;
 
   // Initial data load
   await fetchAll();
   updateDetailPane(detailPane, "", "Detail");
+  refocus();
   screen.render();
 }

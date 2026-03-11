@@ -111,4 +111,22 @@ export class GitClient {
     const result = await this.git.commit(message);
     return result.commit;
   }
+
+  async checkout(branchName: string): Promise<void> {
+    await this.git.checkout(branchName);
+  }
+
+  async push(): Promise<string> {
+    const result = await this.git.push();
+    return result.pushed.length > 0
+      ? `Pushed ${result.pushed.length} ref(s)`
+      : "Push complete";
+  }
+
+  async pull(): Promise<string> {
+    const result = await this.git.pull();
+    return result.summary.changes
+      ? `Pulled: ${result.summary.changes} change(s), ${result.summary.insertions} insertion(s), ${result.summary.deletions} deletion(s)`
+      : "Already up to date";
+  }
 }

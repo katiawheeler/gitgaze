@@ -10,15 +10,18 @@ export function showCommitPrompt(screen: Widgets.Screen): Promise<string | null>
       left: "center",
       width: "60%",
       height: "30%",
-      label: " Commit Message (Enter to submit, Esc to cancel) ",
+      label: " Commit Message ",
       tags: true,
       keys: true,
       inputOnFocus: true,
       border: { type: "line" },
       style: {
+        fg: 250,
         border: { fg: colors.borderFocus },
         focus: { border: { fg: colors.borderFocus } },
-      },
+        label: { fg: colors.borderFocus, bold: true },
+      } as any,
+      padding: { left: 1, right: 1 },
     });
 
     modal.focus();

@@ -1,15 +1,24 @@
 {
-  "name": "gitglance",
+  "name": "gitgaze",
   "version": "1.0.0",
   "description": "A TUI git repository dashboard — get gud at seeing your repo",
   "main": "dist/cli.js",
   "bin": {
-    "gitglance": "dist/cli.js"
+    "gitgaze": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
   },
   "keywords": [
     "git",
@@ -17,13 +26,16 @@
     "dashboard",
     "terminal"
   ],
+  "author": "Katia Wheeler",
   "license": "MIT",
   "dependencies": {
+    "figlet": "^1.11.0",
     "neo-blessed": "^0.2.0",
     "simple-git": "^3.33.0"
   },
   "devDependencies": {
     "@types/blessed": "^0.1.27",
+    "@types/figlet": "^1.7.0",
     "@types/node": "^25.4.0",
     "typescript": "^5.9.3"
   }

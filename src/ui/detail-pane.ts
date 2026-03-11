@@ -11,7 +11,9 @@ export function updateDetailPane(
   }
 
   if (!content || content.trim() === "") {
-    pane.setContent("{bold}No content to display{/bold}\n\nSelect an item and press Enter to view details.");
+    pane.setContent(
+      `\n{${colors.muted}-fg}  Select an item and press Enter to view details.{/${colors.muted}-fg}`
+    );
     return;
   }
 
@@ -24,19 +26,40 @@ function colorizeDiff(diff: string): string {
   return diff
     .split("\n")
     .map((line) => {
-      if (line.startsWith("diff --git") || line.startsWith("index ") || line.startsWith("---") || line.startsWith("+++")) {
-        return `{${colors.diffHeader}-fg}${escapeTags(line)}{/${colors.diffHeader}-fg}`;
+      const escaped = escapeTags(line);
+
+      if (
+        line.startsWith("diff --git") ||
+        line.startsWith("index ") ||
+        line.startsWith("---") ||
+        line.startsWith("+++")
+      ) {
+        return `{${colors.diffHeader}-fg}${escaped}{/${colors.diffHeader}-fg}`;
       }
+
       if (line.startsWith("@@")) {
-        return `{${colors.diffHunk}-fg}${escapeTags(line)}{/${colors.diffHunk}-fg}`;
+        return `{${colors.diffHunk}-fg}${escaped}{/${colors.diffHunk}-fg}`;
       }
+
       if (line.startsWith("+")) {
-        return `{${colors.diffAdd}-fg}${escapeTags(line)}{/${colors.diffAdd}-fg}`;
+        return `{${colors.diffAdd}-fg}${escaped}{/${colors.diffAdd}-fg}`;
       }
+
       if (line.startsWith("-")) {
-        return `{${colors.diffRemove}-fg}${escapeTags(line)}{/${colors.diffRemove}-fg}`;
+        return `{${colors.diffRemove}-fg}${escaped}{/${colors.diffRemove}-fg}`;
       }
-      return escapeTags(line);
+
+      if (line.startsWith("commit ")) {
+        return `{${colors.hash}-fg}{bold}${escaped}{/bold}{/${colors.hash}-fg}`;
+      }
+      if (line.startsWith("Author:")) {
+        return `{${colors.author}-fg}${escaped}{/${colors.author}-fg}`;
+      }
+      if (line.startsWith("Date:")) {
+        return `{${colors.date}-fg}${escaped}{/${colors.date}-fg}`;
+      }
+
+      return escaped;
     })
     .join("\n");
 }

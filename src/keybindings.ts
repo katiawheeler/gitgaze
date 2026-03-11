@@ -5,6 +5,7 @@ import { GitClient } from "./git/client";
 import { updateDetailPane } from "./ui/detail-pane";
 import { showCommitPrompt } from "./ui/commit-prompt";
 import { GitStatusData, CommitEntry, BranchEntry } from "./git/types";
+import { colors } from "./ui/theme";
 
 interface KeybindingContext {
   layout: DashboardLayout;
@@ -18,15 +19,26 @@ interface KeybindingContext {
   };
 }
 
-export function setupKeybindings(ctx: KeybindingContext): void {
+interface KeybindingHandle {
+  refocus: () => void;
+}
+
+export function setupKeybindings(ctx: KeybindingContext): KeybindingHandle {
   const { layout, gitClient, refresh } = ctx;
   const { screen, statusPane, commitsPane, branchesPane, detailPane } = layout;
 
-  const panes: FocusablePane[] = [statusPane, commitsPane, branchesPane, detailPane];
+  const panes: FocusablePane[] = [branchesPane, statusPane, commitsPane, detailPane];
   let focusIndex = 0;
+
+  // Request versioning — incremented on each detail pane load so stale
+  // responses from slow git operations get discarded silently.
+  let detailRequestId = 0;
 
   function focusPane(index: number): void {
     focusIndex = index;
+    for (let i = 0; i < panes.length; i++) {
+      (panes[i] as any).style.border.fg = i === focusIndex ? colors.borderFocus : colors.border;
+    }
     panes[focusIndex].focus();
     screen.render();
   }
@@ -62,14 +74,21 @@ export function setupKeybindings(ctx: KeybindingContext): void {
 
     const allFiles = buildFileList(data.status);
     const entry = allFiles[index];
-    if (!entry) return;
+    if (!entry || !entry.path) {
+      updateDetailPane(detailPane, "", "Detail");
+      screen.render();
+      return;
+    }
 
+    const requestId = ++detailRequestId;
     try {
       detailPane.setContent("{bold}Loading diff...{/bold}");
       screen.render();
       const diff = await gitClient.getFileDiff(entry.path, entry.staged);
+      if (requestId !== detailRequestId) return;
       updateDetailPane(detailPane, diff || `No diff for ${entry.path}`, `Diff: ${entry.path}`);
     } catch {
+      if (requestId !== detailRequestId) return;
       updateDetailPane(detailPane, `Could not load diff for ${entry.path}`, "Error");
     }
     screen.render();
@@ -81,12 +100,15 @@ export function setupKeybindings(ctx: KeybindingContext): void {
     const commit = data.commits[index];
     if (!commit) return;
 
+    const requestId = ++detailRequestId;
     try {
       detailPane.setContent("{bold}Loading commit...{/bold}");
       screen.render();
       const diff = await gitClient.getShowCommit(commit.hash);
+      if (requestId !== detailRequestId) return;
       updateDetailPane(detailPane, diff, `Commit: ${commit.abbreviatedHash} ${commit.message}`);
     } catch {
+      if (requestId !== detailRequestId) return;
       updateDetailPane(detailPane, `Could not load commit ${commit.abbreviatedHash}`, "Error");
     }
     screen.render();
@@ -98,10 +120,12 @@ export function setupKeybindings(ctx: KeybindingContext): void {
     const branch = data.branches[index];
     if (!branch) return;
 
+    const requestId = ++detailRequestId;
     try {
       detailPane.setContent("{bold}Loading branch info...{/bold}");
       screen.render();
       const log = await gitClient.getLog(10);
+      if (requestId !== detailRequestId) return;
       const info = [
         `Branch: ${branch.name}`,
         `Commit: ${branch.commit}`,
@@ -112,6 +136,7 @@ export function setupKeybindings(ctx: KeybindingContext): void {
       ].join("\n");
       updateDetailPane(detailPane, info, `Branch: ${branch.name}`);
     } catch {
+      if (requestId !== detailRequestId) return;
       updateDetailPane(detailPane, `Could not load info for ${branch.name}`, "Error");
     }
     screen.render();
@@ -119,7 +144,7 @@ export function setupKeybindings(ctx: KeybindingContext): void {
 
   // s — toggle stage/unstage for selected file in status pane
   screen.key(["s"], async () => {
-    if (focusIndex !== 0) return;
+    if (focusIndex !== 1) return;
     const data = ctx.getData();
     if (!data.status) return;
 
@@ -180,9 +205,30 @@ export function setupKeybindings(ctx: KeybindingContext): void {
     }
   });
 
-  // e — edit selected file in $EDITOR
-  screen.key(["e"], async () => {
+  // b — checkout selected branch
+  screen.key(["b"], async () => {
     if (focusIndex !== 0) return;
+    const data = ctx.getData();
+    const selected = (branchesPane as unknown as { selected: number }).selected;
+    const branch = data.branches[selected];
+    if (!branch || branch.current) return;
+
+    try {
+      detailPane.setContent("{bold}Checking out branch...{/bold}");
+      screen.render();
+      await gitClient.checkout(branch.name);
+      await refresh();
+      updateDetailPane(detailPane, `Switched to branch: ${branch.name}`, `Branch: ${branch.name}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      updateDetailPane(detailPane, `Checkout error: ${message}`, "Error");
+    }
+    screen.render();
+  });
+
+  // e — edit selected file in $EDITOR (from status or detail pane)
+  screen.key(["e"], async () => {
+    if (focusIndex !== 1 && focusIndex !== 3) return;
     const data = ctx.getData();
     if (!data.status) return;
 
@@ -217,8 +263,39 @@ export function setupKeybindings(ctx: KeybindingContext): void {
     }
   });
 
-  // Start with focus on status pane
-  focusPane(0);
+  // p — push current branch
+  screen.key(["p"], async () => {
+    try {
+      detailPane.setContent("{bold}Pushing...{/bold}");
+      screen.render();
+      const result = await gitClient.push();
+      updateDetailPane(detailPane, result, "Push");
+      await refresh();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      updateDetailPane(detailPane, `Push error: ${message}`, "Error");
+      screen.render();
+    }
+  });
+
+  // P — pull current branch
+  screen.key(["S-p"], async () => {
+    try {
+      detailPane.setContent("{bold}Pulling...{/bold}");
+      screen.render();
+      const result = await gitClient.pull();
+      updateDetailPane(detailPane, result, "Pull");
+      await refresh();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      updateDetailPane(detailPane, `Pull error: ${message}`, "Error");
+      screen.render();
+    }
+  });
+
+  return {
+    refocus: () => focusPane(focusIndex),
+  };
 }
 
 interface FileListEntry {
