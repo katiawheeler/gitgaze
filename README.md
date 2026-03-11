@@ -1,4 +1,4 @@
-**A TUI git repository dashboard — get gud at seeing your repo.**
+**A TUI git dashboard for your terminal — view status, commits, branches, and diffs in a four-pane layout without leaving your shell.**
 
 gitgaze is a terminal-based git dashboard that gives you a full overview of your repository at a glance. View status, commits, branches, and diffs in a four-pane layout without leaving your terminal.
 
