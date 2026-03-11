@@ -2,7 +2,7 @@
 
 gitgaze is a terminal-based git dashboard that gives you a full overview of your repository at a glance. View status, commits, branches, and diffs in a four-pane layout without leaving your terminal.
 
-<video src="docs/demo.mov" controls width="100%"></video>
+<video src="docs/demo.mp4" controls width="100%"></video>
 
 ---
 
