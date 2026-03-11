@@ -1,15 +1,8 @@
-```
- ██████╗ ██╗████████╗ ██████╗ ██╗      █████╗ ███╗   ██╗ ██████╗███████╗
-██╔════╝ ██║╚══██╔══╝██╔════╝ ██║     ██╔══██╗████╗  ██║██╔════╝██╔════╝
-██║  ███╗██║   ██║   ██║  ███╗██║     ███████║██╔██╗ ██║██║     █████╗
-██║   ██║██║   ██║   ██║   ██║██║     ██╔══██║██║╚██╗██║██║     ██╔══╝
-╚██████╔╝██║   ██║   ╚██████╔╝███████╗██║  ██║██║ ╚████║╚██████╗███████╗
- ╚═════╝ ╚═╝   ╚═╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝
-```
-
 **A TUI git repository dashboard — get gud at seeing your repo.**
 
 gitgaze is a terminal-based git dashboard that gives you a full overview of your repository at a glance. View status, commits, branches, and diffs in a four-pane layout without leaving your terminal.
+
+<video src="docs/demo.mov" controls width="100%"></video>
 
 ---
 
@@ -99,27 +92,27 @@ gitgaze --help
 
 ### Navigation
 
-| Key              | Action                                  |
-| ---------------- | --------------------------------------- |
-| `Tab`            | Cycle focus to the next pane            |
-| `Shift-Tab`      | Cycle focus to the previous pane        |
-| `j` / `k`        | Navigate up/down within a pane (vi)     |
-| `Arrow keys`     | Navigate up/down within a pane          |
+| Key          | Action                              |
+| ------------ | ----------------------------------- |
+| `Tab`        | Cycle focus to the next pane        |
+| `Shift-Tab`  | Cycle focus to the previous pane    |
+| `j` / `k`    | Navigate up/down within a pane (vi) |
+| `Arrow keys` | Navigate up/down within a pane      |
 
 ### Actions
 
-| Key              | Action                                  | Context           |
-| ---------------- | --------------------------------------- | ----------------- |
-| `Enter`          | Show diff or details for selected item  | Any pane          |
-| `s`              | Toggle stage/unstage for selected file  | Status pane       |
-| `a`              | Stage all files                         | Global            |
-| `c`              | Commit staged files (opens prompt)      | Global            |
-| `b`              | Checkout the selected branch            | Branches pane     |
-| `e`              | Open selected file in `$EDITOR`         | Status / Detail pane |
-| `p`              | Push current branch to remote           | Global            |
-| `P` (Shift-P)    | Pull current branch from remote         | Global            |
-| `r`              | Refresh all panes                       | Global            |
-| `q` / `Ctrl-C`   | Quit                                    | Global            |
+| Key            | Action                                 | Context              |
+| -------------- | -------------------------------------- | -------------------- |
+| `Enter`        | Show diff or details for selected item | Any pane             |
+| `s`            | Toggle stage/unstage for selected file | Status pane          |
+| `a`            | Stage all files                        | Global               |
+| `c`            | Commit staged files (opens prompt)     | Global               |
+| `b`            | Checkout the selected branch           | Branches pane        |
+| `e`            | Open selected file in `$EDITOR`        | Status / Detail pane |
+| `p`            | Push current branch to remote          | Global               |
+| `P` (Shift-P)  | Pull current branch from remote        | Global               |
+| `r`            | Refresh all panes                      | Global               |
+| `q` / `Ctrl-C` | Quit                                   | Global               |
 
 ### Workflow Example
 
